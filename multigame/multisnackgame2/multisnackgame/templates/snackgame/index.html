@@ -1,0 +1,16 @@
+{%load static%}
+<html>
+    <head>
+        <title>SnackGame</title>
+        <link href="{%static 'snackgame/main.css'%}" type="text/css" rel="stylesheet">
+    </head>
+    <body>
+        <noscript>Please enable your script</noscript>
+        <div id="newdiv">
+            <input type="text" id="name">
+            <input type="button" id="start" value="Start">
+        </div>
+        <canvas id="myCanvas"></canvas>
+        <script src="{%static 'snackgame/main.js'%}"></script>
+    </body>
+</html>

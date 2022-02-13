@@ -1,0 +1,21 @@
+body{
+    margin: 0
+}
+#myCanvas{
+    height: 100%;
+    width: 100%;
+}
+#newdiv{
+    visibility: visible;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+#start{
+    font-style: oblique;
+    border: 0;
+    background-color: rgba(0, 0, 0, 20%);
+    margin-top: 20px;
+}

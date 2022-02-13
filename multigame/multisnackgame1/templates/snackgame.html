@@ -1,0 +1,229 @@
+<html>
+    <head>
+        <title>SnackGame</title>
+        <style>
+            #mycanvas{
+                width: 100%;
+                height: 100%;
+                margin-top: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="mycanvas">
+            
+        </canvas>
+        <script>
+            //map_size=(2000,2000)
+            var canvas = document.getElementById('mycanvas')
+            var rec_size = 20
+            var offsetwidth = document.body.offsetWidth
+            var offsetheight = document.body.offsetHeight
+            canvas.width=offsetwidth
+            canvas.height=offsetheight
+            var l=false
+            var r=false
+            var u=false
+            var d=false
+            var score=0
+            var snack_really_ad_x=(document.body.offsetWidth-rec_size)/2
+            var snack_really_ad_y=(document.body.offsetHeight-rec_size)/2
+            var snack_virtual_ad_x=Math.ceil(Math.random()*100)*20
+            var snack_virtual_ad_y=Math.ceil(Math.random()*100)*20
+            var direction = 'right'
+            var snack_head=new Array
+            var snack_body=new Array
+            var apple_list=new Array
+            var rand_apple_ad=new Array
+            snack_head.unshift(snack_really_ad_x,snack_really_ad_y,snack_virtual_ad_x,snack_virtual_ad_y)
+            snack_body.unshift(snack_head,[snack_head[0]-20,snack_head[1],snack_head[2]-20,snack_head[3]],[snack_head[0]-40,snack_head[1],snack_head[2]-40,snack_head[3]],[snack_head[0]-60,snack_head[1],snack_head[2]-60,snack_head[3]])
+            for(var i=0;i<10;i++){rand_apple_ad.unshift([Math.ceil(Math.random()*100)*20,Math.ceil(Math.random()*100)*20])}
+            for(var i=0;i<10;i++){apple_list.unshift([snack_head[0]-(snack_head[2]-rand_apple_ad[i][0]),snack_head[1]-(snack_head[3]-rand_apple_ad[i][1])])}
+            draw()
+            setInterval(function(){
+                if(window.XMLHttpRequest){
+                    var xhr = new XMLHttpRequest();
+                }else{
+                    var xhr = new ActiveXObject('Microsoft.XMLHTTP');
+                }
+                xhr.onreadystatechange=function(){
+                    if(xhr.readyState==4&&xhr.status==200){
+                        console.log(response)
+                    }
+                }
+                xhr.open('get','/snackgame/getinfor',true)
+                xhr.send()
+            },200)
+            setInterval(function(){
+                var next_head
+                for(var i=0;i<10;i++){
+                    apple_list.pop()
+                }
+                if(direction=='right'){
+                    next_head=[snack_head[0],snack_head[1],snack_head[2]+rec_size,snack_head[3]]
+                    for(var i=0;i<snack_body.length;i++){
+                        snack_body[i][0]-=rec_size
+                    }
+                }else if(direction=='left'){
+                    next_head=[snack_head[0],snack_head[1],snack_head[2]-rec_size,snack_head[3]]
+                    for(var i=0;i<snack_body.length;i++){
+                        snack_body[i][0]+=rec_size
+                    }
+                }else if(direction=='up'){
+                    next_head=[snack_head[0],snack_head[1],snack_head[2],snack_head[3]-rec_size]
+                    for(var i=0;i<snack_body.length;i++){
+                        snack_body[i][1]+=rec_size
+                    }
+                }else if(direction=='down'){
+                    next_head=[snack_head[0],snack_head[1],snack_head[2],snack_head[3]+rec_size]
+                    for(var i=0;i<snack_body.length;i++){
+                        snack_body[i][1]-=rec_size
+                    }
+                }
+                for(var i=0;i<10;i++){apple_list.unshift([snack_head[0]-(snack_head[2]-rand_apple_ad[i][0]),snack_head[1]-(snack_head[3]-rand_apple_ad[i][1])])}
+                // console.log(apple_list)
+                snack_head=next_head
+                if(check_eat_apple(next_head)){
+                    console.log('yes')
+                    snack_body.unshift(next_head)
+                }else{
+                    snack_body.pop()
+                    snack_body.unshift(next_head)
+                }
+                if(snack_head[2]>=2000||snack_head[2]<0||snack_head[3]>=2000||snack_head[3]<0){
+                    console.log('no')
+                }
+                draw()
+            },1000)
+            window.onresize = function(){
+                snack_really_ad_x=(document.body.offsetWidth-rec_size)/2
+                snack_really_ad_y=(document.body.offsetHeight-rec_size)/2
+                offsetwidth = document.body.offsetWidth
+                offsetheight = document.body.offsetHeight
+                canvas.width=offsetwidth
+                canvas.height=offsetheight
+                draw()
+            }
+            window.onkeypress=function(event){
+                var keynum = event.keyCode
+                if(keynum==97 && direction!='right'){direction='left'}
+                else if(keynum==119 && direction!='down'){direction='up'}
+                else if(keynum==100 && direction!='left'){direction='right'}
+                else if(keynum==115 && direction!='up'){direction='down'}
+                return
+            }
+            function draw(){
+                clearcanvas()
+                drawallline()
+                drawapple()
+                drawsnack()
+                // console.log(snack_body)
+            }
+            function drawallline(){
+                l=false
+                r=false
+                u=false
+                d=false
+                if(snack_head[0]>snack_head[2]){l=true}
+                if(snack_head[1]>snack_head[3]){u=true}
+                if(offsetwidth-snack_head[0]-rec_size>2000-snack_head[2]-rec_size){r=true}
+                if(offsetheight-snack_head[1]-rec_size>2000-snack_head[3]-rec_size){d=true}
+                if(l){
+                    if(u){
+                        drawline(snack_head[0]-snack_head[2],snack_head[1]-snack_head[3],snack_head[0]-snack_head[2],offsetheight)
+                        drawline(snack_head[0]-snack_head[2],snack_head[1]-snack_head[3],offsetwidth,snack_head[1]-snack_head[3])
+                    }
+                    else if(d){
+                        drawline(snack_head[0]-snack_head[2],snack_head[1]+rec_size+(2000-snack_head[3]-rec_size),snack_head[0]-snack_head[2],0)
+                        drawline(snack_head[0]-snack_head[2],snack_head[1]+rec_size+(2000-snack_head[3]-rec_size),offsetwidth,snack_head[1]+rec_size+(2000-snack_head[3]-rec_size))
+                    }
+                    else{drawline(snack_head[0]-snack_head[2],0,snack_head[0]-snack_head[2],offsetheight)}
+                }
+                else if(r){
+                    if(u){
+                        drawline(snack_head[0]+rec_size+(2000-snack_head[2]-rec_size),snack_head[1]-snack_head[3],0,snack_head[1]-snack_head[3])
+                        drawline(snack_head[0]+rec_size+(2000-snack_head[2]-rec_size),snack_head[1]-snack_head[3],snack_head[0]+rec_size+(2000-snack_head[2]-rec_size),offsetheight)
+                    }
+                    else if(d){
+                        drawline(snack_head[0]+rec_size+(2000-snack_head[2]-rec_size),snack_head[1]+rec_size+(2000-snack_head[3]-rec_size),0,snack_head[1]+rec_size+(2000-snack_head[3]-rec_size))
+                        drawline(snack_head[0]+rec_size+(2000-snack_head[2]-rec_size),snack_head[1]+rec_size+(2000-snack_head[3]-rec_size),snack_head[0]+rec_size+(2000-snack_head[2]-rec_size),0)
+                    }
+                    else{
+                        drawline(snack_head[0]+rec_size+(2000-snack_head[2]-rec_size),0,snack_head[0]+rec_size+(2000-snack_head[2]-rec_size),offsetheight)
+                    }
+                }
+                else if(u){
+                    // if(l){
+                    //     drawline(snack_head[0]-snack_head[2],snack_head[1]-snack_head[3],snack_head[0]-snack_head[2],offsetheight)
+                    //     drawline(snack_head[0]-snack_head[2],snack_head[1]-snack_head[3],offsetwidth,snack_head[1]-snack_head[3])
+                    // }
+                    // else if(r){
+                    //     drawline(snack_head[0]+rec_size+(2000-snack_head[2]-rec_size),snack_head[1]-snack_head[3],0,snack_head[1]-snack_head[3])
+                    //     drawline(snack_head[0]+rec_size+(2000-snack_head[2]-rec_size),snack_head[1]-snack_head[3],snack_head[0]+rec_size+(2000-snack_head[2]-rec_size),offsetheight)
+                    // }
+                    // else{
+                    //     drawline(0,snack_head[1]-snack_head[3],offsetwidth,snack_head[1]-snack_head[3])
+                    // }
+                    drawline(0,snack_head[1]-snack_head[3],offsetwidth,snack_head[1]-snack_head[3])
+                }
+                else if(d){
+                    // if(l){
+                    //     drawline(snack_head[0]-snack_head[2],snack_head[1]+rec_size+(2000-snack_head[3]-rec_size),snack_head[0]-snack_head[2],0)
+                    //     drawline(snack_head[0]-snack_head[2],snack_head[1]+rec_size+(2000-snack_head[3]-rec_size),offsetwidth,snack_head[1]+rec_size+(2000-snack_head[3]-rec_size))
+                    // }
+                    // else if(r){
+                    //     drawline(snack_head[0]+rec_size+(2000-snack_head[2]-rec_size),snack_head[1]+rec_size+(2000-snack_head[3]-rec_size),0,snack_head[1]+rec_size+(2000-snack_head[3]-rec_size))
+                    //     drawline(snack_head[0]+rec_size+(2000-snack_head[2]-rec_size),snack_head[1]+rec_size+(2000-snack_head[3]-rec_size),snack_head[0]+rec_size+(2000-snack_head[2]-rec_size),0)
+                    // }
+                    // else{
+                    //     drawline(0,snack_head[1]+rec_size+(2000-snack_head[3]-rec_size),offsetwidth,snack_head[1]+rec_size+(2000-snack_head[3]-rec_size))
+                    // }
+                    drawline(0,snack_head[1]+rec_size+(2000-snack_head[3]-rec_size),offsetwidth,snack_head[1]+rec_size+(2000-snack_head[3]-rec_size))
+                }
+            }
+            function drawsnack(){
+                for(var i=0;i<snack_body.length;i++){
+                    drawrect(snack_body[i][0],snack_body[i][1],rec_size,rec_size,color='green')
+                }
+            }
+            function drawline(x1,y1,x2,y2){
+                var ctx = canvas.getContext('2d')
+                ctx.moveTo(x1,y1)
+                ctx.lineTo(x2,y2)
+                ctx.stroke()
+            }
+            function drawrect(x,y,dx,dy,color='black'){
+                var ctx = canvas.getContext('2d')
+                ctx.fillRect(x,y,dx,dy)
+                ctx.fillStyle=color
+            }
+            function clearcanvas(){
+                // var ctx = canvas.getContext('2d')
+                // ctx.clearRect(0,0,offsetwidth,offsetheight)
+                canvas.width=offsetwidth
+                canvas.height=offsetheight
+            }
+            function drawapple(){
+                for(var i=0;i<apple_list.length;i++){
+                    drawrect(apple_list[i][0],apple_list[i][1],rec_size,rec_size,color='yellow')
+                }
+            }
+            function check_eat_apple(next_head){
+                // console.log(rand_apple_ad)
+                for(var i=0;i<rand_apple_ad.length;i++){
+                    if(next_head[2]==rand_apple_ad[i][0]&&next_head[3]==rand_apple_ad[i][1]){
+                        var delect_apple=rand_apple_ad.splice(i,1)
+                        rand_apple_ad.unshift([Math.ceil(Math.random()*100)*20,Math.ceil(Math.random()*100)*20])
+                        return true
+                    }
+                }
+                return false
+            }
+            function clearrect(x,y,dx,dy){
+                var ctx = canvas.getContext('2d')
+                ctx.clearRect(x,y,dx,dy)
+            }
+        </script>
+    </body>
+    
+</html>
